@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nebula | Future Interface</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=Inter:wght@300;400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #050507;
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            --accent: #6d28d9;
+            --accent-glow: #8b5cf6;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-blur: 20px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+
+        #nebula-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* HIDDEN UI FOR NOW */
+        .ui-layer {
+            display: none;
+            /* 
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            pointer-events: none;
+            */
+        }
+
+        .hero-card {
+            pointer-events: auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            padding: 4rem;
+            border-radius: 24px;
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards 0.5s;
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #b4b4b4 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.02em;
+        }
+
+        p {
+            font-size: 1.125rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 2.5rem;
+            font-weight: 300;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-glow));
+            color: white;
+            text-decoration: none;
+            border-radius: 99px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 20px rgba(109, 40, 217, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            user-select: none;
+            /* Prevent text selection */
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(139, 92, 246, 0.6);
+        }
+
+        .cta-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(255, 255, 255, 0.2), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .cta-button:hover::after {
+            opacity: 1;
+        }
+
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .bottom-nav {
+            position: absolute;
+            bottom: 3rem;
+            display: flex;
+            gap: 2rem;
+            pointer-events: auto;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards 1s;
+        }
+
+        .nav-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: color 0.3s;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #fff;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0%;
+            height: 1px;
+            bottom: -4px;
+            left: 0;
+            background-color: var(--accent-glow);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="nebula-canvas"></canvas>
+
+    <div class="ui-layer">
+        <!-- Content Hidden -->
+    </div>
+
+    <script>
+        /**
+         * Optimize Edilmiş Nebula Animasyonu (Gerçekçi Fizik Modu)
+         * - Object Pooling & Spatial Grid
+         * - Yörüngesel Hareket (Teğet Kuvvet)
+         * - Kütle/Eylemsizlik (F=ma)
+         * - Yumuşak Çarpışmalar (Soft Body Collisions)
+         */
+        const canvas = document.getElementById('nebula-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        // Temel Ayarlar (Performans/Kalite dengesi)
+        const PARTICLE_COUNT = 200;
+        const CONNECTION_DIST = 150;
+        const CONNECTION_DIST_SQ = CONNECTION_DIST * CONNECTION_DIST;
+
+        // Nesne Havuzu (Moved down to line 500 area)
+        // const maxParticles = 400; // REMOVED DUPLICATE
+        // let particles = [];     // REMOVED DUPLICATE
+
+        let mouse = { x: null, y: null };
+        let pulseArray = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+        });
+        window.addEventListener('mouseleave', () => {
+            mouse.x = null;
+            mouse.y = null;
+        });
+
+        // Etkileşim Değişkenleri
+        let activeSuns = []; // Artık birden fazla obje var
+
+        // TIKLAMA İLE BAŞLAT (Click & Watch)
+        window.addEventListener('mousedown', (e) => {
+            // Yeni bir obje ekle
+            activeSuns.push({
+                x: e.x, y: e.y,
+                size: 2, maxSize: 12,
+                opacity: 1,
+                state: 'charging',
+                createdTime: Date.now(),
+                phaseStartTime: Date.now()
+            });
+        });
+
+        // mouseup işlevsiz
+        window.addEventListener('mouseup', () => { });
+
+        function triggerBigBang(x, y) {
+            const physicsPulse = {
+                x: x, y: y,
+                radius: 10, maxRadius: 2000,
+                speed: 40, forceMultiplier: 40
+            };
+            pulseArray.push(physicsPulse);
+
+            // Her patlamada 100 YENİ parçacık ekle
+            const particlesToAdd = 100;
+
+            for (let i = 0; i < particlesToAdd; i++) {
+                // Önce havuzdaki ölüleri kontrol et
+                const deadParticle = particles.find(p => !p.alive);
+
+                if (deadParticle) {
+                    deadParticle.resetInPlace(x, y, true);
+                } else {
+                    // Havuz doluysa yeni oluştur ve havuza ekle
+                    const p = new Particle();
+                    p.resetInPlace(x, y, true);
+                    particles.push(p);
+                }
+            }
+        }
+
+        function handlePulses() {
+            const now = Date.now();
+
+            // Tüm aktif güneşleri/kara delikleri işle
+            for (let i = 0; i < activeSuns.length; i++) {
+                let sun = activeSuns[i];
+                let phaseDuration = now - sun.phaseStartTime;
+
+                if (sun.state === 'charging') {
+                    // FAZ 1: GÜNEŞ
+                    if (sun.size < sun.maxSize) {
+                        sun.size += 0.05;
+                    }
+                    drawSun(sun.x, sun.y, sun.size, 1, false);
+
+                    if (phaseDuration > 15000) {
+                        sun.state = 'blackhole';
+                        sun.phaseStartTime = now;
+                        sun.size = 5;
+                    }
+
+                } else if (sun.state === 'blackhole') {
+                    // FAZ 2: KARA DELİK
+                    if (sun.size < 20) sun.size += 0.05;
+                    drawSun(sun.x, sun.y, sun.size, 1, true);
+
+                    if (phaseDuration > 15000) {
+                        triggerBigBang(sun.x, sun.y);
+                        // Listeden çıkar
+                        activeSuns.splice(i, 1);
+                        i--; // İndeksi düzelt
+                    }
+                }
+            }
+
+            for (let i = 0; i < pulseArray.length; i++) {
+                let p = pulseArray[i];
+                p.radius += p.speed;
+                if (p.radius > p.maxRadius) {
+                    pulseArray.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        class Particle {
+            constructor() {
+                this.alive = false;
+                this.resetInPlace();
+            }
+
+            resetInPlace(startX, startY, bigBangMode = false) {
+                this.alive = true;
+                this.consumed = false;
+
+                if (startX !== undefined && startY !== undefined) {
+                    this.x = startX;
+                    this.y = startY;
+                    const angle = Math.random() * Math.PI * 2;
+                    const velocity = bigBangMode ? (Math.random() * 30 + 10) : (Math.random() * 15 + 5);
+                    this.vx = Math.cos(angle) * velocity;
+                    this.vy = Math.sin(angle) * velocity;
+                } else {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                }
+
+                this.z = Math.random() * 2 + 0.5;
+                // Rastgele hız yedeği (eğer duruyorsa hareketlendir)
+                if (this.vx === 0 && startX === undefined) {
+                    this.vx = (Math.random() - 0.5) * 0.5 * this.z;
+                    this.vy = (Math.random() - 0.5) * 0.5 * this.z;
+                }
+
+                // Boyut = Kütle (Mass)
+                this.size = Math.random() * 2 + (this.z * 1);
+                this.mass = this.size;
+                this.hue = Math.random() * 60 + 240;
+
+                this.baseVx = (Math.random() - 0.5) * 0.5 * this.z;
+                this.baseVy = (Math.random() - 0.5) * 0.5 * this.z;
+            }
+
+            update(index) {
+                if (!this.alive) return;
+
+                this.x += this.vx;
+                this.y += this.vy;
+
+                // Sürtünme (Nebula gazı içinde hareket, hafif drag)
+                // Kütleli cisimler momentumunu daha iyi korur
+                const friction = 0.02 / this.mass;
+                this.vx += (this.baseVx - this.vx) * friction;
+                this.vy += (this.baseVy - this.vy) * friction;
+
+                this.hue += 0.5;
+                if (this.hue > 320) this.hue = 240;
+
+                // Kenar Kontrolü
+                if (this.x < 0 || this.x > width) this.vx *= -1;
+                if (this.y < 0 || this.y > height) this.vy *= -1;
+
+                // --- 1. ÇOKLU OBJE ÇEKİMİ ---
+                // Her bir güneş/kara delik için kuvvet hesapla ve topla
+                for (let k = 0; k < activeSuns.length; k++) {
+                    let sun = activeSuns[k];
+
+                    let dx = sun.x - this.x;
+                    let dy = sun.y - this.y;
+                    let distSq = dx * dx + dy * dy;
+                    let dist = Math.sqrt(distSq);
+
+                    if (sun.state === 'blackhole') {
+                        // Tüketim (Herhangi bir kara deliğe girerse ölür)
+                        if (distSq < sun.size * sun.size * 2) { // Yarıçapı artırdık
+                            this.alive = false;
+                            this.consumed = true;
+                            // Add to FreeList
+                            freeList.push(index);
+
+                            if (sun.size < 50) sun.size += 0.05;
+                            continue;
+                        }
+
+                        // --- KARA DELİK FİZİĞİ (EMME MODU) ---
+                        // Merkeze güçlü çekim, yörünge çürümesi
+                        const gravityStrength = 20000;
+                        let force = gravityStrength / distSq;
+                        if (force > 300) force = 300;
+
+                        let acceleration = force / this.mass;
+
+                        const angle = Math.atan2(dy, dx);
+
+                        // Radyal Çekim (Baskın)
+                        this.vx += Math.cos(angle) * acceleration;
+                        this.vy += Math.sin(angle) * acceleration;
+
+                        // Teğet Kuvvet (Swirl) - Aşırı değil, asıl amaç içeri çekmek
+                        const swirlSpeed = acceleration * 0.8;
+                        this.vx += -Math.sin(angle) * swirlSpeed;
+                        this.vy += Math.cos(angle) * swirlSpeed;
+
+                        // Orbital Decay (Yörünge Çürümesi)
+                        // Kara delik aktifken sürtünme çok yüksek olmalı ki içeri düşsünler
+                        let decayFactor = 1;
+                        if (dist < 400) {
+                            decayFactor = 0.94; // %6 hız kaybı (Hızlı çöküş)
+                        } else {
+                            decayFactor = 0.98;
+                        }
+                        this.vx *= decayFactor;
+                        this.vy *= decayFactor;
+
+                    } else {
+                        // --- GÜNEŞ FİZİĞİ (YÖRÜNGE MODU) ---
+                        // Amaç: Yutmak değil, etrafında döndürmek
+                        const gravityStrength = sun.size * 50; // Çekim gücü
+                        if (distSq < 640000) { // 800px yarıçap
+                            let force = gravityStrength / distSq;
+                            if (force > 8) force = 8;
+                            let acceleration = force / this.mass;
+
+                            const angle = Math.atan2(dy, dx);
+
+                            // 1. Radyal Çekim (Merkeze) - ÇOK AZALTILDI
+                            // Sadece yörüngede tutacak kadar, içeri çekmemeli
+                            this.vx += Math.cos(angle) * acceleration * 0.5;
+                            this.vy += Math.sin(angle) * acceleration * 0.5;
+
+                            // 2. Teğet Kuvvet (Orbit) - ARTIRILDI
+                            // Daha hızlı ve belirgin dönüş
+                            const swirlFactor = 1.5;
+                            this.vx += (-Math.sin(angle) * acceleration * swirlFactor);
+                            this.vy += (Math.cos(angle) * acceleration * swirlFactor);
+
+                            // Güneş modunda sürtünme (Decay) YOK
+                        }
+                    }
+                } // End activeSuns loop
+
+                if (!this.alive) return; // Döngü içinde öldüyse çık
+
+                // --- 2. Pulse Etkisi ---
+                // Pulse - Mecburen sqrt kullanıyoruz çünkü radius lineer
+                for (let i = 0; i < pulseArray.length; i++) {
+                    let p = pulseArray[i];
+                    let dx = p.x - this.x;
+                    let dy = p.y - this.y;
+                    let distSq = dx * dx + dy * dy;
+
+                    let minR = p.radius - 20;
+                    let maxR = p.radius + 60;
+                    if (minR < 0) minR = 0;
+
+                    if (distSq < maxR * maxR && distSq > minR * minR) {
+                        const angle = Math.atan2(dy, dx);
+                        // Patlamalar kütleyi etkiler! Hafif parçalar uçar, ağırlar az kıpırdar.
+                        const pushForce = (p.forceMultiplier * (1 / this.z)) / this.mass;
+                        this.vx -= Math.cos(angle) * pushForce;
+                        this.vy -= Math.sin(angle) * pushForce;
+                    }
+                }
+            }
+
+            draw() {
+                if (!this.alive) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = `hsla(${this.hue}, 80%, 60%, ${0.3 * this.z})`;
+                ctx.fill();
+            }
+        }
+
+        // Nesne Havuzu
+        const maxParticles = 400; // Havuz kapasitesi
+        let particles = [];     // Aktif ve pasif tüm parçacıklar
+        const freeList = [];    // Boş parçacıkların indeksleri (O(1) erişim için)
+
+        // ...
+
+        // Havuzu Başlat
+        function initPool() {
+            particles = [];
+            freeList.length = 0; // Reset stack
+
+            for (let i = 0; i < maxParticles; i++) {
+                const p = new Particle();
+                p.alive = (i < PARTICLE_COUNT); // İlk kısmı canlı
+                particles.push(p);
+
+                if (!p.alive) {
+                    freeList.push(i);
+                }
+            }
+        }
+
+        function spawnParticle(x, y, isBigBang) {
+            // Stack'ten al (O(1))
+            if (freeList.length > 0) {
+                const index = freeList.pop();
+                const p = particles[index];
+                p.resetInPlace(x, y, isBigBang);
+            }
+        }
+
+        // Particle ölünce listeye geri ekle
+        function killParticle(p, index) {
+            if (p.alive) {
+                p.alive = false;
+                freeList.push(index);
+            }
+        }
+
+
+
+
+        // --- RENDER OPTIMIZATION (OFFSCREEN CANVAS) ---
+        let sunCanvas, blackHoleCanvas;
+
+        function initOffscreenCanvases() {
+            // 1. Sun Canvas
+            sunCanvas = document.createElement('canvas');
+            sunCanvas.width = 300;
+            sunCanvas.height = 300;
+            const sCtx = sunCanvas.getContext('2d');
+            const cX = 150, cY = 150, R = 150;
+
+            // Generic Gradient (0 to R)
+            // Note: Ratio r1 = size*0.2, r2 = size*4. 
+            // So r1 = (R/4)*0.2 = R * 0.05
+            const g1 = sCtx.createRadialGradient(cX, cY, R * 0.05, cX, cY, R);
+            g1.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            // We use 1.0 alpha here and control opacity via globalAlpha during draw
+            g1.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+            sCtx.fillStyle = g1;
+            sCtx.beginPath();
+            sCtx.arc(cX, cY, R, 0, Math.PI * 2);
+            sCtx.fill();
+
+            // 2. Black Hole Canvas
+            blackHoleCanvas = document.createElement('canvas');
+            blackHoleCanvas.width = 300;
+            blackHoleCanvas.height = 300;
+            const bCtx = blackHoleCanvas.getContext('2d');
+
+            // Ratio: r1=size*0.2, r2=size*3
+            // r1 = (R/3)*0.2 = R * 0.066
+            const g2 = bCtx.createRadialGradient(cX, cY, R * 0.06, cX, cY, R);
+            g2.addColorStop(0, 'rgba(0,0,0,1)');
+            g2.addColorStop(0.3, 'rgba(0,0,0,1)');
+            g2.addColorStop(0.4, 'rgba(100, 50, 255, 0.8)');
+            g2.addColorStop(1, 'rgba(139, 92, 246, 0)');
+
+            bCtx.fillStyle = g2;
+            bCtx.beginPath();
+            bCtx.arc(cX, cY, R, 0, Math.PI * 2);
+            bCtx.fill();
+        }
+
+        // Initialize once
+        initOffscreenCanvases();
+
+        // Optimized Draw Function
+        function drawSun(x, y, size, opacity, isBlackHole) {
+            ctx.save();
+            ctx.globalAlpha = opacity;
+
+            if (isBlackHole) {
+                // Original radius was size * 3
+                const drawRadius = size * 3;
+                // Draw Image centered
+                ctx.drawImage(blackHoleCanvas, x - drawRadius, y - drawRadius, drawRadius * 2, drawRadius * 2);
+            } else {
+                // Original radius was size * 4
+                const drawRadius = size * 4;
+                ctx.drawImage(sunCanvas, x - drawRadius, y - drawRadius, drawRadius * 2, drawRadius * 2);
+            }
+
+            ctx.restore();
+        }
+
+        // --- GRID OPTIMIZATION ---
+        // Reusing objects to reduce GC
+        const grid = new Map();
+        // We use a Map because keys are strings "x,y". 
+        // Arrays are reused.
+        const cellSize = 150;
+
+        function clearGrid() {
+            for (let list of grid.values()) {
+                list.length = 0; // Clear without deallocation
+            }
+        }
+
+        function addToGrid(p) {
+            const cellX = ~~(p.x / cellSize);
+            const cellY = ~~(p.y / cellSize);
+            const key = `${cellX},${cellY}`;
+
+            let list = grid.get(key);
+            if (!list) {
+                list = [];
+                grid.set(key, list);
+            }
+            list.push(p);
+            return key; // Return key for quick lookup later if needed
+        }
+
+        // Pre-allocate neighborhood offsets to avoid recreating them
+        const neighborOffsets = [
+            [0, 0], [-1, -1], [0, -1], [1, -1],
+            [-1, 0], [1, 0],
+            [-1, 1], [0, 1], [1, 1]
+        ];
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+
+            handlePulses();
+
+            // 1. Clear & Rebuild Grid
+            clearGrid();
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                if (p.alive) {
+                    p.update(i); // Pass index for FreeList
+                    if (p.alive) addToGrid(p); // Add new position
+                }
+            }
+
+            ctx.lineWidth = 1;
+
+            // 2. Interaction Loop
+            for (let i = 0; i < particles.length; i++) {
+                let p = particles[i];
+                if (!p.alive) continue;
+
+                p.draw();
+
+                const cellX = ~~(p.x / cellSize);
+                const cellY = ~~(p.y / cellSize);
+
+                // Iterate neighbors directly without creating new arrays
+                for (let n = 0; n < neighborOffsets.length; n++) {
+                    const offset = neighborOffsets[n];
+                    const key = `${cellX + offset[0]},${cellY + offset[1]}`;
+                    const neighbors = grid.get(key);
+
+                    if (!neighbors) continue;
+
+                    for (let j = 0; j < neighbors.length; j++) {
+                        let p2 = neighbors[j];
+
+                        if (p === p2) continue;
+                        // One-way check (optimization)
+                        if (p.x < p2.x) continue; // Only check pairs once
+
+                        let dx = p.x - p2.x;
+                        let dy = p.y - p2.y;
+                        let distSq = dx * dx + dy * dy;
+
+                        // --- 3. Soft Collision ---
+                        let minDist = (p.size + p2.size) * 4;
+                        let minDistSq = minDist * minDist;
+
+                        if (distSq < minDistSq && distSq > 0.1) {
+                            let dist = Math.sqrt(distSq);
+                            let overlap = minDist - dist;
+                            let force = overlap * 0.005;
+
+                            let angle = Math.atan2(dy, dx);
+                            let fx = Math.cos(angle) * force;
+                            let fy = Math.sin(angle) * force;
+
+                            p.vx += fx / p.mass;
+                            p.vy += fy / p.mass;
+                            p2.vx -= fx / p2.mass;
+                            p2.vy -= fy / p2.mass;
+                        }
+
+                        if (distSq < CONNECTION_DIST_SQ) {
+                            let alpha = 1 - (distSq / CONNECTION_DIST_SQ);
+                            // Inline drawing for speed
+                            ctx.strokeStyle = `hsla(${p.hue}, 80%, 60%, ${alpha * 0.2})`;
+                            ctx.beginPath();
+                            ctx.moveTo(p.x, p.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }
+
+        initPool();
+        animate();
+
+    </script>
+
+</body>
+
+</html>
